@@ -1,1 +1,4 @@
 .DS_Store
+.vscode
+example1/controllers/supervisor/falsify_csvs*
+example2/controllers/supervisor/falsify_csvs

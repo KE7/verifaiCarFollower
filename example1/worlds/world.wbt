@@ -1,4 +1,30 @@
-#VRML_SIM R2022a utf8
+#VRML_SIM R2023a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/devices/sick/protos/SickLms291.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/solids/protos/SolidBox.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/road/protos/CurvedRoadSegment.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/road/protos/Crossroad.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/road/protos/RoadIntersection.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/road/protos/RoadLine.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/road/protos/StraightRoadSegment.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/CrossRoadsTrafficLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/CautionPanel.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/GenericTrafficLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/CautionSign.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/SpeedLimitSign.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/SpeedLimitPanel.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/OrderSign.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/YieldSign.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/StopPanel.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/OrderPanel.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/HighwaySign.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/HighwayPole.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/traffic/protos/StopSign.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/obstacles/protos/OilBarrel.proto"
+EXTERNPROTO "../protos/BmwX5New.proto"
+
 WorldInfo {
   info [
     "Autonomous Vehicle Simulation"
@@ -73,7 +99,7 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation -0.166313 0.477141 0.862946 0.767783
+  orientation -0.16631305432067972 0.4771411558424383 0.8629462818529717 0.767783
   position -105.6999 -150.198 36.1229
   near 1
   follow "follower"
@@ -563,33 +589,25 @@ DEF LEAD BmwX5New {
   hidden position_0_5 1.1599999999999997
   hidden position_0_8 -0.9157806271806433
   hidden position_0_9 1.004502517442513
-  hidden linearVelocity_0 -10.580647477492231 -8.856268056559214 0.00029694180361532305
-  hidden angularVelocity_0 0.00034943568385568957 0.000779016034178579 0.40660897364697385
   hidden rotation_1 0.9982789311576362 0.0448005325665621 0.03784293710218344 1.7404744445543718
-  hidden linearVelocity_1 -9.89449194912404 -9.197770635293674 7.124187782129192e-05
-  hidden angularVelocity_1 24.715467123177973 -26.48323280573712 0.9203047690563624
   hidden rotation_2 0.9955115171171841 0.04240935414606169 0.0846065362011496 0.93290953402545
-  hidden linearVelocity_2 -10.41768940369369 -9.604623073742781 0.00014776984274726137
-  hidden angularVelocity_2 25.825061924420243 -27.925497315932414 0.9488047422414292
   hidden rotation_3 1 0 0 2.4042933020831234
-  hidden linearVelocity_3 -10.643920613930193 -8.235007507576574 -0.00011581992048021069
-  hidden angularVelocity_3 22.150696326747862 -28.510031056956283 0.941853483929743
   hidden rotation_4 1 0 0 0.3750267990185377
-  hidden linearVelocity_4 -11.164376648490208 -8.643817736868856 0.0026625741096902274
-  hidden angularVelocity_4 23.149142373890115 -29.806287512321287 0.9624660282635612
-  hidden translation_20 0.6796940323396681 1.4514641949228768 -0.5011056105847136
+  hidden translation_20 0.679694032339665 1.4514641949228786 -0.5011056105847156
   hidden rotation_20 -0.6131273759850641 0.014426526493766216 -0.7898523255337002 1.1599999999999997
-  hidden translation_21 0.3230331577511105 1.770036848123381 -0.2948077811020319
+  hidden translation_21 0.3230331577511105 1.770036848123381 -0.29480778110203276
   hidden rotation_21 -0.5594983700538185 -0.03580789568344439 -0.8280575876796515 1.1599999999999997
   hidden rotation_24 0 0.3205961743168832 -0.9472159695726095 0.9157806271806432
-  hidden translation_25 0.3229804156371241 1.9110286885017458 0.3625290379600376
+  hidden translation_25 0.322980415637123 1.9110286885017462 0.36252903796003755
   hidden rotation_25 0.7466598432279096 0 -0.6652060421485013 1.0045025174425128
-  name "lead"
-  translation -54.5, -105 0.317
+  translation -54.5 -105 0.317
   rotation -7.240001997507892e-05 0.00772119763954837 0.9999701884882609 0
-  color 0.0 0.0 0.0
+  color 0 0 0
+  name "lead"
   controller "lead"
-  controllerArgs ""
+  controllerArgs [
+    ""
+  ]
   sensorsSlotFront [
     SickLms291 {
       translation 0.06 0 0
@@ -643,32 +661,24 @@ DEF FOLLOWER BmwX5New {
   hidden position_0_5 1.1599999999999997
   hidden position_0_8 -0.9157806271806433
   hidden position_0_9 1.004502517442513
-  hidden linearVelocity_0 -10.580647477492231 -8.856268056559214 0.00029694180361532305
-  hidden angularVelocity_0 0.00034943568385568957 0.000779016034178579 0.40660897364697385
   hidden rotation_1 0.9982789311576362 0.0448005325665621 0.03784293710218344 1.7404744445543718
-  hidden linearVelocity_1 -9.89449194912404 -9.197770635293674 7.124187782129192e-05
-  hidden angularVelocity_1 24.715467123177973 -26.48323280573712 0.9203047690563624
   hidden rotation_2 0.9955115171171841 0.04240935414606169 0.0846065362011496 0.93290953402545
-  hidden linearVelocity_2 -10.41768940369369 -9.604623073742781 0.00014776984274726137
-  hidden angularVelocity_2 25.825061924420243 -27.925497315932414 0.9488047422414292
   hidden rotation_3 1 0 0 2.4042933020831234
-  hidden linearVelocity_3 -10.643920613930193 -8.235007507576574 -0.00011581992048021069
-  hidden angularVelocity_3 22.150696326747862 -28.510031056956283 0.941853483929743
   hidden rotation_4 1 0 0 0.3750267990185377
-  hidden linearVelocity_4 -11.164376648490208 -8.643817736868856 0.0026625741096902274
-  hidden angularVelocity_4 23.149142373890115 -29.806287512321287 0.9624660282635612
-  hidden translation_20 0.6796940323396681 1.4514641949228768 -0.5011056105847136
+  hidden translation_20 0.679694032339665 1.4514641949228786 -0.5011056105847156
   hidden rotation_20 -0.6131273759850641 0.014426526493766216 -0.7898523255337002 1.1599999999999997
-  hidden translation_21 0.3230331577511105 1.770036848123381 -0.2948077811020319
+  hidden translation_21 0.3230331577511105 1.770036848123381 -0.29480778110203276
   hidden rotation_21 -0.5594983700538185 -0.03580789568344439 -0.8280575876796515 1.1599999999999997
   hidden rotation_24 0 0.3205961743168832 -0.9472159695726095 0.9157806271806432
-  hidden translation_25 0.3229804156371241 1.9110286885017458 0.3625290379600376
+  hidden translation_25 0.322980415637123 1.9110286885017462 0.36252903796003755
   hidden rotation_25 0.7466598432279096 0 -0.6652060421485013 1.0045025174425128
-  name "follower"
-  translation -64.5, -105 0.317
+  translation -64.5 -105 0.317
   rotation -7.240001997507892e-05 0.00772119763954837 0.9999701884882609 0
+  name "follower"
   controller "follower"
-  controllerArgs ""
+  controllerArgs [
+    ""
+  ]
   sensorsSlotFront [
     SickLms291 {
       translation 0.06 0 0
@@ -698,9 +708,10 @@ DEF FOLLOWER BmwX5New {
       ]
       fieldOfView 1
       width 128
-      recognition Recognition {}
       focus Focus {
-        focalDistance 10.0
+        focalDistance 10
+      }
+      recognition Recognition {
       }
     }
   ]
@@ -1037,8 +1048,6 @@ Crossroad {
   ]
 }
 OilBarrel {
-  hidden linearVelocity_0 -2.266025768704479e-18 -3.9126749266031964e-18 5.276910208625506e-15
-  hidden angularVelocity_0 9.154833234484235e-18 -9.920032983426187e-18 -1.7621918398254307e-18
   translation -110.31684 -66.875162 0.5998773749999997
   rotation -4.968932106931235e-19 6.1250594204175275e-19 1 3.14159
   height 1.2
@@ -1051,9 +1060,7 @@ OilBarrel {
   }
 }
 DEF OIL_BARREL_1 OilBarrel {
-  hidden linearVelocity_0 -1.6387333329914307e-18 1.551177906666353e-17 5.278271610231842e-15
-  hidden angularVelocity_0 -1.7490591581879462e-17 -6.897494106314988e-18 2.6251292132489907e-18
-  translation 0.0 0.0 0.5998773749999997
+  translation 0 0 0.5998773749999997
   rotation -3.9254890390086206e-19 6.123440637639813e-19 1 3.14159
   name "oil barrel(1)"
   height 1.2
@@ -1066,9 +1073,7 @@ DEF OIL_BARREL_1 OilBarrel {
   }
 }
 DEF OIL_BARREL_2 OilBarrel {
-  hidden linearVelocity_0 -1.6387333329914307e-18 1.551177906666353e-17 5.278271610231842e-15
-  hidden angularVelocity_0 -1.7490591581879462e-17 -6.897494106314988e-18 2.6251292132489907e-18
-  translation 2.0 0.0 0.5998773749999997
+  translation 2 0 0.5998773749999997
   rotation -3.9254890390086206e-19 6.123440637639813e-19 1 3.14159
   name "oil barrel(2)"
   height 1.2
@@ -1081,9 +1086,7 @@ DEF OIL_BARREL_2 OilBarrel {
   }
 }
 DEF OIL_BARREL_3 OilBarrel {
-  hidden linearVelocity_0 2.3337708008457106e-18 -2.3516718093227272e-17 5.293773835611515e-15
-  hidden angularVelocity_0 3.1337248765931684e-17 -8.645038144325443e-18 5.914597915690389e-18
-  translation 4.0 0.0 0.5998773749999997
+  translation 4 0 0.5998773749999997
   rotation 1.2338080018126266e-18 1.7166405005052625e-19 -0.9999999999999999 1.5707953071795862
   name "oil barrel(3)"
   height 1.2
@@ -1096,8 +1099,6 @@ DEF OIL_BARREL_3 OilBarrel {
   }
 }
 OilBarrel {
-  hidden linearVelocity_0 1.4377304874822954e-17 1.9593233561500325e-19 -3.569609079239479e-15
-  hidden angularVelocity_0 2.8125968435245143e-19 2.6484170727388077e-17 -9.973413382379537e-18
   translation -21.3988 -45.2699 0.5998773750000003
   rotation -1.3058078253371845e-18 -8.980627388366473e-20 -1 1.1781
   name "oil barrel(4)"
@@ -1111,8 +1112,6 @@ OilBarrel {
   }
 }
 OilBarrel {
-  hidden linearVelocity_0 1.644040160940829e-17 1.825173448572584e-17 5.293653161720769e-15
-  hidden angularVelocity_0 -5.073865738847315e-17 3.5442091505558e-17 1.18255441821778e-17
   translation -22.9161 -45.3401 0.5998773749999997
   rotation -3.0625201066927257e-19 8.713241442600863e-19 1 1.9634953071795869
   name "oil barrel(5)"
@@ -1126,8 +1125,6 @@ OilBarrel {
   }
 }
 OilBarrel {
-  hidden linearVelocity_0 -1.761155331104674e-17 7.83467963165634e-18 5.277001844649672e-15
-  hidden angularVelocity_0 -1.3942550936567977e-19 -2.5570608241601207e-17 -6.39513349739822e-19
   translation -22.1326 -45.7229 0.5998773749999997
   rotation 0.02450180300712086 -0.04567251308052922 -0.9986559383482927 2.5529617931641644e-17
   name "oil barrel(6)"
@@ -1141,8 +1138,6 @@ OilBarrel {
   }
 }
 OilBarrel {
-  hidden linearVelocity_0 -1.1986320527504643e-19 -2.3521005573348606e-18 5.28029147420583e-15
-  hidden angularVelocity_0 2.380227049764695e-19 -1.3887853617142073e-18 -3.581543938466151e-18
   translation -48.6853 20.1904 0.5998773749999996
   rotation 5.89877343564136e-19 5.748924880829551e-19 1 3.01069
   name "oil barrel(7)"
@@ -1157,11 +1152,9 @@ OilBarrel {
 }
 DEF OBSTACLE SolidBox {
   translation 25.5 -54.5 0.31
-  rotation 0 0 1 0
   name "box(1)"
-  size 2 2 2
   appearance PBRAppearance {
-    baseColor 0.0 0.0 0.0
+    baseColor 0 0 0
   }
 }
 Robot {

@@ -1,4 +1,4 @@
 
-python3.9 analyze.py smc compositional
+python analyze.py smc compositional
 
-python3.9 analyze.py smc monolithic
+python analyze.py smc monolithic
