@@ -1,6 +1,5 @@
 import math
-from typing import List, Tuple, Optional
-from math import cos, sin, sqrt
+from typing import List, Optional
 import numpy as np
 
 from controller import Driver, Keyboard, Camera, Lidar, GPS, Display, ImageRef, Robot
