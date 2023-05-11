@@ -238,7 +238,7 @@ class VehicleController:
         self.previous_filtered_angles.append(angle)
         return np.mean(self.previous_filtered_angles)
     
-    def process_sick_angle(self, sick_data: float) -> float:
+    def process_sick_data(self, sick_data: float) -> float:
         """
         Returns the approximate angle of the obstacle
         or UNKNOWN if no obstacle is detected
