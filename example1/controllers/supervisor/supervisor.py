@@ -217,23 +217,32 @@ simulation_data.port = PORT
 simulation_data.bufsize = BUFSIZE
 simulation_data.task = Task(N_SIM_STEPS=N_SIM_STEPS, supervisor=supervisor)
 client_task = ClientWebots(simulation_data)
+print("Starting the simulation...")
+supervisor.simulationResetPhysics()
+supervisor.simulationReset()
+supervisor.getFromDef("LEAD").restartController()
+supervisor.getFromDef("FOLLOWER").restartController()
+supervisor.step(TIME_STEP)
+i = 0
 while True:
-    try:
-        print("Connecting to the falsifier...")
-        result = client_task.run_client()
-        if not result:
-            print("End of scene generation")
-            supervisor.simulationResetPhysics()
-            supervisor.simulationReset()
-            supervisor.getFromDef("FOLLOWER").restartController()
-            supervisor.getFromDef("LEAD").restartController()
-            supervisor.step(TIME_STEP)
-    except:
-        supervisor.simulationResetPhysics()
-        supervisor.simulationReset()
-        print("Waiting for new connection...", flush=True)
-        supervisor.getFromDef("FOLLOWER").restartController()
-        supervisor.getFromDef("LEAD").restartController()
-        supervisor.step(TIME_STEP)
-        sleep(70)
-
+    # try:
+        # print("Connecting to the falsifier...")
+        # result = client_task.run_client()
+        # if not result:
+        #     print("End of scene generation")
+        #     supervisor.simulationResetPhysics()
+        #     supervisor.simulationReset()
+        #     supervisor.getFromDef("FOLLOWER").restartController()
+        #     supervisor.getFromDef("LEAD").restartController()
+        #     supervisor.step(TIME_STEP)
+        
+    # except:
+    #     supervisor.simulationResetPhysics()
+    #     supervisor.simulationReset()
+    #     print("Waiting for new connection...", flush=True)
+    #     supervisor.getFromDef("FOLLOWER").restartController()
+    #     supervisor.getFromDef("LEAD").restartController()
+    #     supervisor.step(TIME_STEP)
+    #     sleep(70)
+    i += 1
+    supervisor.step(TIME_STEP)

@@ -1,8 +1,17 @@
 import math
+from cv2 import imshow
+import einops
+import os
+import sys
 from typing import List, Optional
 import numpy as np
 
-from controller import Driver, Keyboard, Camera, Lidar, GPS, Display, ImageRef, Robot
+from controller import Keyboard, Camera, Lidar, GPS, Display, Robot
+from vehicle import Driver
+# from deepbots.supervisor.controllers.deepbots_supervisor_env import RobotSupervisorEnv
+from deepbots.supervisor.controllers.deepbots_supervisor_env import DeepbotsSupervisorEnv
+from PPOAgent import PPOAgent, Transition
+from gym.spaces import Box, Discrete
 
 # Size of the yellow line angle filter
 FILTER_SIZE = 3
@@ -15,9 +24,10 @@ KD = 2
 UNKNOWN = 99999.99
 TIME_STEP = 50
 
-
 class VehicleController:
-    def __init__(self):
+    def __init__(self, driver: Driver, robot: Robot):
+        self.driver = driver
+        self.robot = robot
         self.autodrive = True
         self.speed = 0.0
         self.steering_angle = 0.0
@@ -51,7 +61,7 @@ class VehicleController:
         self.display: Optional[Display] = None
         self.display_width = 0
         self.display_height = 0
-        self.speedometer_image: Optional[ImageRef] = None
+        self.speedometer_image: Optional[Display] = None
 
         # GPS
         self.gps: Optional[GPS] = None
@@ -61,10 +71,10 @@ class VehicleController:
         self.Z = 2
         self.gps_speed = 0.0
 
+        self.setup()
+
 
     def setup(self):
-        Driver.init()
-
         self.detect_features()
         self.init_camera()
         self.init_sick()
@@ -74,9 +84,9 @@ class VehicleController:
         self.print_help()
 
     def detect_features(self):
-        num_devices = Robot.getNumberOfDevices()
+        num_devices = self.robot.getNumberOfDevices()
         for i in range(num_devices):
-            device = Robot.getDeviceByIndex(i)
+            device = self.robot.getDeviceByIndex(i)
             name = device.getName()
             if name == "Sick LMS 291":
                 self.enable_collision_avoidance = True
@@ -89,39 +99,39 @@ class VehicleController:
 
     def init_camera(self):
         if self.has_camera:
-            self.camera = Robot.getCamera("camera")
+            self.camera = self.robot.getDevice("camera")
             self.camera.enable(TIME_STEP)
-            self.camera.recognition_enable(TIME_STEP)
-            self.camera_width = self.camera.get_width()
-            self.camera_height = self.camera.get_height()
-            self.camera_fov = self.camera.get_fov()
+            self.camera.recognitionEnable(TIME_STEP)
+            self.camera_width = self.camera.getWidth()
+            self.camera_height = self.camera.getHeight()
+            self.camera_fov = self.camera.getFov()
 
     def init_sick(self):
         if self.enable_collision_avoidance:
-            self.sick = Robot.getDevice("Sick LMS 291")
+            self.sick = self.robot.getDevice("Sick LMS 291")
             self.sick.enable(TIME_STEP)
-            self.sick_width = self.sick.get_horizontal_resolution()
-            self.sick_range = self.sick.get_max_range()
-            self.sick_fov = self.sick.get_fov()
+            self.sick_width = self.sick.getHorizontalResolution()
+            self.sick_range = self.sick.getMaxRange()
+            self.sick_fov = self.sick.getFov()
 
     def init_gps(self):
         if self.has_gps:
-            self.gps = Robot.getDevice("gps")
+            self.gps = self.robot.getDevice("gps")
             self.gps.enable(TIME_STEP)
 
     def init_display(self):
         if self.enable_display:
-            self.display = Robot.getDevice("display")
-            self.speedometer_image = self.display.image_load("speedometer.png")
+            self.display = self.robot.getDevice("display")
+            self.speedometer_image = self.display.imageLoad("speedometer.png")
 
     def start_engine(self):
         if self.has_camera:
             self.set_speed(40.0)  # km/h
 
-        Driver.setHazardFlashers(True)
-        Driver.setDippedBeams(True)
-        Driver.setAntifogLights(True)
-        Driver.setWiperMode(Driver.SLOW)
+        self.driver.setHazardFlashers(True)
+        self.driver.setDippedBeams(True)
+        self.driver.setAntifogLights(True)
+        self.driver.setWiperMode(Driver.SLOW)
 
     def print_help(self):
         print("Use the arrow keys to control the vehicle")
@@ -132,15 +142,17 @@ class VehicleController:
     def set_speed(self, speed: float):
         # check for max speed
         if speed > self.max_speed:
+            print("Max speed reached. Clipping to {} km/h".format(self.max_speed))
             speed = self.max_speed
 
         # check for min speed
         if speed < self.min_speed:
+            print("Min speed reached. Clipping to {} km/h".format(self.min_speed))
             speed = self.min_speed
 
         self.speed = speed
 
-        Driver.setCruisingSpeed(self.speed)
+        self.driver.setCruisingSpeed(cruisingSpeed=self.speed)
 
     def set_auto_drive(self, autodrive: bool):
         if self.autodrive == autodrive:
@@ -171,7 +183,7 @@ class VehicleController:
         elif self.steering_angle < -0.5:
             self.steering_angle = -0.5
         
-        Driver.setSteeringAngle(self.steering_angle)
+        self.driver.setSteeringAngle(self.steering_angle)
 
     def change_manual_steer_angle(self, delta: float):
         self.set_auto_drive(False)
@@ -200,21 +212,61 @@ class VehicleController:
         elif key == ord("A"):
             self.set_auto_drive(True)
 
+
+    def color_diff(self, a: List[int], b: List[int]) -> float:
+        diff = 0
+        for i in range(3):
+            diff += abs(a[i] - b[i])
+        return diff
+    
+
+    def convert_rgb_to_names(self, rgb_tuple):
+        from scipy.spatial import KDTree
+        from webcolors import (
+            css3_hex_to_names,
+            hex_to_rgb,
+        )
+        
+        # a dictionary of all the hex and their respective names in css3
+        css3_db = css3_hex_to_names
+        names = []
+        rgb_values = []
+        for color_hex, color_name in css3_db.items():
+            names.append(color_name)
+            rgb_values.append(hex_to_rgb(color_hex))
+        
+        kdt_db = KDTree(rgb_values)
+        distance, index = kdt_db.query(rgb_tuple)
+        return f'closest match: {names[index]}'
+
+
     def process_camera_image(self, image: List[int]):
         """
         Returns the approximate angle of the yellow line
         or UNKNOWN if no line is detected
         """
-        num_image_pixels = self.camera_width * self.camera_height
+        # print("image size: {}".format(len(image)))
+        # num_image_pixels = self.camera_width * self.camera_height
+        # RGB
         yellow = [95, 187, 203]
 
         sum_x = 0
         pixel_count = 0
-        for i in range(0, num_image_pixels, 4):
-            if color_diff(image[i:i + 3], yellow) < 30:
-                x = (i % self.camera_width)
-                sum_x += x
-                pixel_count += 1
+        for w in range(self.camera_width):
+            for h in range(self.camera_height):
+                middle = 64
+                around_middle = 10
+                # if w in range(middle - around_middle, middle + around_middle):
+                    # print("image at w: {} h: {} is {}".format(w, h, image[w][h]))
+                red   = Camera.imageGetRed(image, self.camera_width, w, h)
+                green = Camera.imageGetGreen(image, self.camera_width, w, h)
+                blue  = Camera.imageGetBlue(image, self.camera_width, w, h)
+                print(self.convert_rgb_to_names((red, green, blue)))
+                if self.color_diff([red, green, blue], yellow) < 50:
+                    print("yellow found")
+                    x = w
+                    sum_x += x
+                    pixel_count += 1
         
         if pixel_count == 0:
             return UNKNOWN
@@ -265,7 +317,7 @@ class VehicleController:
         Display.imagePaste(self.display, self.speedometer_image, 0, 0, False)
 
         # draw the speedometer needle
-        current_speed = Driver.getCurrentSpeed()
+        current_speed = self.driver.getCurrentSpeed()
         if current_speed < 0 or math.isnan(current_speed):
             current_speed = 0
 
@@ -309,25 +361,143 @@ class VehicleController:
         return self.KP * yellow_line_angle + self.KD * diff + self.KI * PID_integral
     
 
+def normalizeToRange(value, minVal, maxVal, newMin, newMax, clip=False):
+    """
+    Normalize value to a specified new range by supplying the current range.
+
+    :param value: value to be normalized
+    :param minVal: value's min value, value ∈ [minVal, maxVal]
+    :param maxVal: value's max value, value ∈ [minVal, maxVal]
+    :param newMin: normalized range min value
+    :param newMax: normalized range max value
+    :param clip: whether to clip normalized value to new range or not
+    :return: normalized value ∈ [newMin, newMax]
+    """
+    value = float(value)
+    minVal = float(minVal)
+    maxVal = float(maxVal)
+    newMin = float(newMin)
+    newMax = float(newMax)
+
+    if clip:
+        return np.clip((newMax - newMin) / (maxVal - minVal) * (value - maxVal) + newMax, newMin, newMax)
+    else:
+        return (newMax - newMin) / (maxVal - minVal) * (value - maxVal) + newMax
+
+
+class FollowerCarRobot(DeepbotsSupervisorEnv):
+    def __init__(self, image_width, image_height, image_channels=3, action_steps=10):
+        super().__init__()
+        self.observation_space = Box(low=0, high=255, 
+                                     shape=(image_width, image_height, image_channels), 
+                                     dtype=np.float32)
+        self.action_sapce = Discrete(action_steps)
+
+        self.steps_per_episode = 1000
+        self.episode_score = 0
+        self.episode_scores = []
+
+    def get_reward(self):
+        return 1
+    
+    def is_done(self, controller: VehicleController):
+        # check if we have reached the end of the episode
+        print("episode score: ", self.episode_score)
+        if self.episode_score > 950:
+            return True
+
+        # check if we have veered off the road
+        current_image = Camera.getImage(controller.camera)
+        # current_image = controller.camera.getImageArray()
+        # print("is equal: ", np.array_equal(current_image, other_image))
+        # print("current image shape: ", np.array(current_image).shape)
+        # print("other image shape: ", np.array(other_image).shape)
+        # import ipdb; ipdb.set_trace()
+        current_angle = controller.process_camera_image(current_image)
+        print("current angle: ", current_angle)
+        if current_angle == UNKNOWN or abs(current_angle) > 25:
+            return True
+        
+        # check if we lost the lead car
+        num_recognition_objects = Camera.getRecognitionNumberOfObjects(controller.camera)
+        recognition_objects = Camera.getRecognitionObjects(controller.camera)
+        lead_present = "BMW X5" in [recognition_objects[i].getModel() for i in range(num_recognition_objects)]
+        print("lead present: ", lead_present)
+        print("num recognition objects: ", num_recognition_objects)
+        if num_recognition_objects == 0 or not lead_present:
+            return True
+        
+        return False
+    
+    def solved(self):
+        if len(self.episode_scores) > 100:
+            return np.mean(self.episode_scores[-100:]) > 950
+        
+    def get_default_observation(self):
+        return np.zeros(self.observation_space.shape)
+    
+    def convert_action(self, action: int):
+        # convert discrete action to continuous action
+        action = normalizeToRange(action, 0, self.action_space.n, -0.5, 0.5)
+        return action
+
 
 if __name__ == "__main__":
+    env = FollowerCarRobot(image_width=128, image_height=64, image_channels=3, action_steps=10)
+    robot = env
     driver = Driver()
-    driver.init()
-    controller = VehicleController()
+    controller = VehicleController(driver=driver, robot=robot)
+
+    if not controller.has_camera:
+        print("Autonomous Car cannot drive without camera")
+        sys.exit(1)
+    else:
+        print("Camera found")
+
+    # print("camera image = {}", env.getDevice("camera").getImageArray())
+
+    # camera_image = env.getDevice("camera").getImageArray()
+    # print("camera image = {}", camera_image)
+    image_width = env.getDevice("camera").getWidth()
+    print("image width = {}", image_width)
+    image_height = env.getDevice("camera").getHeight()
+    print("image height = {}", image_height)
+    agent = PPOAgent(image_height=image_height, image_width=image_width, image_channels=3, quantized_actions=10)
+    # del env
+    # env = FollowerCarRobot(image_width=image_width, image_height=image_height, image_channels=3, action_steps=10)
+
+    # Let's see if there is a previously saved model
+    try:
+        agent.load(os.path.dirname(os.path.abspath(__file__)) + "/model")
+        print("Loaded model from disk")
+        solved = True
+    except:
+        print("No previous model found, training from scratch")
+        solved = False
 
     i = 0
+    episode_count = 0
+    steps = 0
 
     # Main loop:
     # - perform simulation steps until Webots is stopping the controller
-    while driver.step() != -1:
+    while driver.step() != -1 and not solved:
+
+        observation = env.reset()
+        # print("observation = {}", np.array(observation).shape)
+        env.episode_score = 0
         
         # update sensors only every TIME_STEP milliseconds
-        if i % (TIME_STEP // Robot.getBasicTimeStep()) == 0:
+        if i % (TIME_STEP // robot.getBasicTimeStep()) == 0:
+            steps += 1
             # read sensors
             if controller.has_camera:
-                camera_image = Camera.getImage(controller.camera)
+                camera_image = np.array(robot.getDevice("camera").getImageArray(), dtype=np.float32)
+                camera_image = einops.rearrange(camera_image, 'h w c -> c h w')
+                assert camera_image.shape[0] == 3
+                # print("camera image = {}", np.array(camera_image).shape)
             if controller.enable_collision_avoidance:
-                sick_data = Lidar.getRangeImage(controller.sick)
+                sick_data = controller.sick.getRangeImage()
 
             num_recognition_objects = Camera.getRecognitionNumberOfObjects(controller.camera)
             recognition_objects = Camera.getRecognitionObjects(controller.camera)
@@ -342,20 +512,42 @@ if __name__ == "__main__":
 
             if controller.autodrive and controller.has_camera:
                 controller.set_speed(40.0)
-                orientation_to_lead = controller.process_camera_image(camera_image)
-                orientation_to_lead = controller.filter_angle(orientation_to_lead)
-                if orientation_to_lead != UNKNOWN:
-                    if distance_to_lead != UNKNOWN:
-                        # too far behind the lead car
-                        if distance_to_lead > 12.5:
-                            controller.set_speed(45.0)
-                            Driver.setBrakeIntensity(0.0)
-                        elif distance_to_lead < 7.5:
-                            Driver.setBrakeIntensity(1.0)
-                    controller.set_steering_angle(controller.apply_PID(orientation_to_lead))
-                else:
-                    Driver.setBrakeIntensity(0.5)
-                    controller.PID_need_reset = True
+                # orientation_to_lead = controller.process_camera_image(camera_image)
+                # orientation_to_lead = controller.filter_angle(orientation_to_lead)
+                # if orientation_to_lead != UNKNOWN:
+                if distance_to_lead != UNKNOWN:
+                    # too far behind the lead car
+                    if distance_to_lead > 12.5:
+                        controller.set_speed(45.0)
+                        driver.setBrakeIntensity(0.0)
+                    elif distance_to_lead < 7.5:
+                        driver.setBrakeIntensity(1.0)
+                    # controller.set_steering_angle(controller.apply_PID(orientation_to_lead))
+
+            # In training mode the agent samples from the probability distribution, naturally implementing exploration
+            selectedAction, actionProb = agent.work(camera_image, type_="selectAction")
+            # Step the supervisor to get the current selectedAction's reward, 
+            # the new observation and whether we reached
+            # the done condition
+            controller.set_steering_angle(selectedAction)
+            reward = env.get_reward()
+            done = env.is_done(controller)
+            newObservation = np.array(robot.getDevice("camera").getImageArray(), dtype=np.float32)
+            newObservation = einops.rearrange(camera_image, 'h w c -> c h w')
+            # newObservation, reward, done, info = env.step([selectedAction])
+            trans = Transition(camera_image, selectedAction, actionProb, reward, newObservation)
+            agent.storeTransition(trans)
+            if done:
+                # Save the episode's score
+                env.episode_scores.append(env.episode_score)
+                agent.trainStep(batchSize=steps + 1)
+                solved = env.solved()
+            else:
+                driver.setBrakeIntensity(0.5)
+                controller.PID_need_reset = True
+
+            env.episode_score += reward
+            observation = newObservation
 
             # update stuff
             if controller.has_gps:
@@ -365,5 +557,16 @@ if __name__ == "__main__":
 
         i += 1
 
+    if solved:
+        print("Solved in {} episodes".format(episode_count))
+        agent.save(os.path.dirname(os.path.abspath(__file__)) + "/model")
+    else:
+        print("Did not solve after {} episodes".format(episode_count))
+
+    observation = robot.getDevice("camera").getImageArray()
+    while driver.step() != -1:
+        selectedAction, actionProb = agent.work(observation, type_="selectActionMax")
+        observation, reward, done, info = env.step([selectedAction])
+
     # Enter here exit cleanup code
-    Driver.cleanup()
+    driver.cleanup()
