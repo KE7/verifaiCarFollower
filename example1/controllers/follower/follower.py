@@ -22,7 +22,7 @@ KI = 0.006
 KD = 2
 
 UNKNOWN = 99999.99
-TIME_STEP = 50
+TIME_STEP = 50  # milliseconds
 
 class VehicleController:
     def __init__(self, driver: Driver, robot: Robot):
@@ -222,13 +222,10 @@ class VehicleController:
 
     def convert_rgb_to_names(self, rgb_tuple):
         from scipy.spatial import KDTree
-        from webcolors import (
-            css3_hex_to_names,
-            hex_to_rgb,
-        )
-        
+        from webcolors import hex_to_rgb
+        import webcolors
         # a dictionary of all the hex and their respective names in css3
-        css3_db = css3_hex_to_names
+        css3_db = webcolors.CSS3_HEX_TO_NAMES
         names = []
         rgb_values = []
         for color_hex, color_name in css3_db.items():
@@ -252,6 +249,7 @@ class VehicleController:
 
         sum_x = 0
         pixel_count = 0
+        # Camera.saveImage(self.camera, "test.jpg", 100)
         for w in range(self.camera_width):
             for h in range(self.camera_height):
                 middle = 64
@@ -261,7 +259,12 @@ class VehicleController:
                 red   = Camera.imageGetRed(image, self.camera_width, w, h)
                 green = Camera.imageGetGreen(image, self.camera_width, w, h)
                 blue  = Camera.imageGetBlue(image, self.camera_width, w, h)
-                print(self.convert_rgb_to_names((red, green, blue)))
+                colorname = self.convert_rgb_to_names((red, green, blue))
+                othercolorname = self.convert_rgb_to_names(self.camera.getImageArray()[w][h])
+                if colorname != 'darkslategray':
+                    print("image at w: {} h: {} is {}".format(w, h, colorname))
+                if othercolorname != 'darkslategray':
+                    print("image at w: {} h: {} is {}".format(w, h, othercolorname))
                 if self.color_diff([red, green, blue], yellow) < 50:
                     print("yellow found")
                     x = w
